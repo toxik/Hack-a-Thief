@@ -5,18 +5,18 @@ var firmata = require('firmata'),
     io		= require('socket.io').listen(app);
 
     // camera vars
-    camOX 	= 0,	camOY	= 0,
-    camDX	= 90,	camDY	= 90,	incr	= 2,
+    camOX 	= 2,	camOY	= 9,
+    camDX	= 90,	camDY	= 90,	camINCR	= 2,
 
     // wheels vars
-    WH1		= 0,	WHD1	= 0,	WH1PWR	= 0,
-    WH2		= 0,	WHD2	= 0,	WH1PWR	= 0,
+    WH1		= 0,	WHD1	= 0,	WH1PWR	= 0,  WH1TM = null, buffTime = 150,
+    WH2		= 0,	WHD2	= 0,	WH2PWR	= 0,  WH2TM = null,
 
     // hook vars
-    HK 		= 0,	HKMIN	= 90,	HKMAX	= 180, HKCURR = 90, HKINCR = 5, HKDIR = 1,
+    HK 		= 10,	HKMIN	= 90,	HKMAX	= 180, HKCURR = 90, HKINCR = 5, HKDIR = 1,
 
     // sonar vars
-    SON1	= 0,	SON2	= 0,	SONINT	= 250,
+    SON1	= 1,	SON2	= 5,	SONINT	= 250,
     SONSPL1	= [],	SONSPL2	= [],	
     SON1LST	= null,	SON2LST	= null;
 
@@ -31,7 +31,8 @@ function configBoard(err) {
 		board.pinMode(camOY,	board.MODES.SERVO);
 		board.servoWrite(camOX, camDX);
 		board.servoWrite(camOY, camDY);
-
+		
+		/*
 		board.pinMode(HK,		board.MODES.SERVO);
 		board.servoWrite(HK,	HKCURR);
 
@@ -39,12 +40,12 @@ function configBoard(err) {
 		board.pinMode(WHD1, 	board.MODES.OUTPUT);
 		board.pinMode(WH1, 		board.MODES.PWM);
 		board.pinMode(WH2, 		board.MODES.PWM);
-
+		*/
 		board.pinMode(SON1, 	board.MODES.ANALOG);
 		board.analogRead(SON1,  function (data) { SONSPL1.push( parseInt(data) ); });
 		board.pinMode(SON2,		board.MODES.ANALOG);
-		board.analogRead(SON1,  function (data) { SONSPL2.push( parseInt(data) ); });
-
+		board.analogRead(SON2,  function (data) { SONSPL2.push( parseInt(data) ); });
+		
 		console.log('Arduino board configured and ready for action.');
 	} catch (e) {
 		console.log('Eroare la configurarea arduino AKA ai bagat bine pinii, mah ?!', e);
@@ -93,13 +94,53 @@ app.configure(function(){
 	io.set('log level', 1);
 	io.sockets.on('connection', function(socket){
 		socket.on('key', function(data){
-			console.log(data);
+ 			      if (data.code === 'w') {
+			        camDY += camINCR;
+			        if (dcamDY <= 170) {
+			          board.servoWrite(camOY, camDY);
+			        }
+			        } else if (data.code === 's') {
+			        camDY -= camINCR;
+			        if (camDY >= 10) {
+			          board.servoWrite(camOY, camDY);
+			        }
+			      } else if (data.code === 'a') {
+			        camDX -= camINCR;
+			        if (camDX >= 30) {
+			          board.servoWrite(camOX, camDX);
+			        }
+			      } else if (camINCR.code ==='d') {
+			        camDX += camINCR;
+			        if (camDX <= 120) {
+			          board.servoWrite(camOX, camDX);
+			        }
+			      } else if (data.code === 'i') {
+			        clearTimeout(WH1TM);
+			        board.digitalWrite(WHD1, board.HIGH);
+			        board.analogWrite(WM1, WH1PWR);
+			        WH1TM = setTimeout(function() { board.analogWrite(WM1, 0); }, buffTime);
+			      } else if (data.code === 'k') {
+			        clearTimeout(WH1TM);
+			        board.digitalWrite(WHD1, board.LOW);
+			        board.analogWrite(WM1, WH1PWR);
+			        WH1TM = setTimeout(function() { board.analogWrite(WM1, 0); }, buffTime);
+			      } else if (data.code === 'j') {
+			        clearTimeout(WH2TM);
+			        board.digitalWrite(WHD2, board.HIGH);
+			        board.analogWrite(WM2, WH2PWR);
+			        WH2TM = setTimeout(function() { board.analogWrite(WM2, 0); }, buffTime);
+			      } else if (data.code === 'l') {
+			        clearTimeout(WH2TM);
+			        board.digitalWrite(WHD2, board.LOW);
+			        board.analogWrite(WM2, WH2PWR);
+			        WH2TM = setTimeout(function() { board.analogWrite(WM2, 0); }, buffTime);
+			      }
 		});
 	})
 });
 
 // do the hacking and slashing
-setInterval(function(){
+setInterval(function() {
 	HKCURR += HKDIR * HKINCR;
 	if (HKCURR < HKMIN || HKCURR > HKMAX) {
 		HKDIR *= -1;

@@ -3,35 +3,108 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-	<title>Hack-a-Thief</title>
 	<link href="/static/bootstrap.css" rel="stylesheet">
-
+	<style>
+		.button {width: 2.4em; height: 1.4em; font-weight: bold; font-size: 2.5em }
+		.switch {width: 2.4em; height: 1.4em; font-weight: bold; font-size: 2.5em }
+	</style>
+	<title>Document</title>
+</head>
+<body>
 	<script src="/socket.io/socket.io.v0.9.14.js"></script>
 	<script src="/static/keymaster.min.js"></script>
 	<script src="/static/fastclick.js"></script>
 	<script src="/static/zepto.min.js"></script>
+
+	<!--<img id="stream" src="http://replaceme:33335/?action=stream">-->
+	<br>
 	
-</head>
-<body>
-	<h1>Hack a Thief, baby!</h1>
+	<table style="width: 100%">
+		<tr>
+			<td><button class="btn span3 button" data-key=aw>&larr;&uarr;</button></td>
+			<td><button class="btn span3 button btn-primary" data-key=w>&uarr;</button></td>
+			<td><button class="btn span3 button" data-key=wd>&uarr;&rarr;</button></td>
+		</tr>
+		<tr>
+			<td>
+				<button class="btn span3 button btn-primary" data-key=a>&larr;</button>
+			</td>
+			<td>
+				<button id="movToggle" class="btn switch span3 btn-success">c</button>
+			</td>
+			<td>
+				<button class="btn span3 button btn-primary" data-key=d>&rarr;</button>
+			</td>
+		</tr>
+		<tr>
+			<td><button class="btn span3 button" data-key=as>&larr;&darr;</button></td>
+			<td><button class="btn span3 button btn-primary" data-key=s>&darr;</button></td>
+			<td><button class="btn span3 button" data-key=sd>&darr;&rarr;</button></td>
+		</tr>
+	</table>
+	
+<textarea id="serverConsole" class="span12" rows=18>Raspuns de la server:
+</textarea>
 
-<script>
-// connect to socket.io
-var socket = io.connect('http://' + window.location.hostname),
-	rate = 150, down = null;
+	<script>
+	  var rate = 100 /* miliseconds for pooling */, down = null,
+	  	  $button = $('.button');
+	  window.addEventListener('load', function() {
+		new FastClick(document.body);
+		//FastClick.attach($('.button').get());
+		var mouseDown = function(e) {
+			e.preventDefault();
+			down = $(this).data('key');
+			socket.emit('key', { code: $(this).data('key') });
+		}, 	mouseUp = function() {
+			down = null;
+		};
+		$button.on('mousedown', mouseDown).on('touchstart', mouseDown)
+			.on('mouseup', mouseUp).on('touchend', mouseUp);
+		
+	  }, false);
+	  var socket = io.connect('http://' + window.location.hostname);
 
-key('w, a, s, d, i, j, k, l', function(e, h) { 
-	socket.emit('key', { code: h.shortcut });
-});
+	  var $stream = $('#stream'), streamSrc = $stream.attr('src');
+	  $stream.attr('src', streamSrc.replace('replaceme', window.location.hostname));
+	  // streaming off
+	  $stream.remove();
+
+	  // EASIER DEBUG
+	  $serverConsole = $('#serverConsole');
+	  socket.on('key', function(data) {
+		$serverConsole.text( $serverConsole.text() + data);
+	  });
+	  // END EASIER DEBUG
 
 
-// when a key is pressed, emit it
-setInterval(function() {
-	if (down !== null) {
-		socket.emit('key', { code: down });
-	}
-}, rate);
+	  key('w, a, s, d, i, j, k, l', function(e, h) { 
+		socket.emit('key', { code: h.shortcut });
+	  });
 
-</script>
+
+	  var 
+	  	movToggle = 0,
+	  	all = [
+	  		[ 'aw', 'w', 'wd', 'a', 'd', 'as', 's', 'sd' ],
+	  		[ 'ji', 'i', 'il', 'j', 'l', 'jk', 'k', 'kl' ]
+	  	], $movToggle = $('#movToggle');
+	  $movToggle.click(function(e) {
+	  	movToggle = Math.abs(movToggle - 1);
+	  	$button.each(function(i, e) { e.setAttribute('data-key', all[movToggle][i]) });
+	  	if (movToggle) {
+	  		$movToggle.text('m').addClass('btn-warning').removeClass('btn-success');
+	  	} else {
+	  		$movToggle.text('c').addClass('btn-success').removeClass('btn-warning');
+	  	}
+	  });
+
+	  setInterval(function() {
+		if (down !== null) {
+			socket.emit('key', { code: down });
+		}
+	  }, rate);
+	</script>
+	
 </body>
 </html>
