@@ -96,7 +96,7 @@ app.configure(function(){
 		socket.on('key', function(data){
  			      if (data.code === 'w') {
 			        camDY += camINCR;
-			        if (dcamDY <= 170) {
+			        if (camDY <= 170) {
 			          board.servoWrite(camOY, camDY);
 			        }
 			        } else if (data.code === 's') {
