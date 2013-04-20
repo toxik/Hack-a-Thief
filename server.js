@@ -11,6 +11,9 @@ var firmata = require('firmata'),
     WH1		= 0,	WHD1	= 0,	WH1PWR	= 0,
     WH2		= 0,	WHD2	= 0,	WH1PWR	= 0,
 
+    // hook vars
+    HK 		= 0,	HKMIN	= 90,	HKMAX	= 180, HKCURR = 90, HKINCR = 5, HKDIR = 1,
+
     // sonar vars
     SON1	= 0,	SON2	= 0,	SON_INT	= 250,
     sampl1	= [],	sampl2	= [],	
@@ -38,3 +41,20 @@ app.configure(function(){
 	app.listen(8080);
 });
 
+setInterval(function(){
+	HKCURR += HKDIR * HKINCR;
+	if (HKCURR < HKMIN || HKCURR > HKMAX) {
+		HKDIR *= -1;
+	}
+	if (HKCURR < HKMIN) HKCURR = HKMIN;
+	if (HKCURR > HKMAX) HKCURR = HKMAX;
+
+	try {
+		board.servoWrite(HK, HKCURR);
+	} catch (e) {
+
+	}
+
+	console.log(HKCURR);
+
+}, 200); 
