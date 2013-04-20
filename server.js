@@ -32,7 +32,7 @@ function configBoard(err) {
 		board.servoWrite(camOX, camDX);
 		board.servoWrite(camOY, camDY);
 		
-		/*
+		
 		board.pinMode(HK,		board.MODES.SERVO);
 		board.servoWrite(HK,	HKCURR);
 
@@ -40,7 +40,7 @@ function configBoard(err) {
 		board.pinMode(WHD1, 	board.MODES.OUTPUT);
 		board.pinMode(WH1, 		board.MODES.PWM);
 		board.pinMode(WH2, 		board.MODES.PWM);
-		*/
+		
 		board.pinMode(SON1, 	board.MODES.ANALOG);
 		board.analogRead(SON1,  function (data) { SONSPL1.push( parseInt(data) ); });
 		board.pinMode(SON2,		board.MODES.ANALOG);
@@ -156,7 +156,7 @@ setInterval(function() {
 	try {
 		board.servoWrite(HK, HKCURR);
 	} catch (e) {
-		
+
 	}
 
 }, 200); 
