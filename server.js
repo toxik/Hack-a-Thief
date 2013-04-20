@@ -62,9 +62,9 @@ var medie1 = 0, medie2 = 0, i = 0;
   for (i = 0; i < SONSPL2.length; i++) { medie2 += SONSPL2[i] }
   medie1 = parseInt( medie1 / SONSPL1.length );
   medie2 = parseInt( medie2 / SONSPL2.length );
-  if (last1 !== medie1 || last2 !== medie2) {
-    last1 = medie1;
-    last2 = medie2;
+  if (SON1LST !== medie1 || SON2LST !== medie2) {
+    SON1LST = medie1;
+    SON2LST = medie2;
     onSonarChange({ left: medie1, right: medie2 });
   }
 
@@ -72,6 +72,10 @@ var medie1 = 0, medie2 = 0, i = 0;
   SONSPL2.length = 0;
 
 }, SONINT);
+
+function onSonarChange(son) {
+	console.log(son);
+}
 
 app.configure(function(){
 	// we don't want any parsing
