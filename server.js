@@ -5,7 +5,7 @@ var firmata = require('firmata'),
     io		= require('socket.io').listen(app);
 
     // camera vars
-    camOX 	= 2,	camOY	= 9,
+    camOX 	= 9,	camOY	= 2,
     camDX	= 90,	camDY	= 90,	camINCR	= 2,
 
     // wheels vars
@@ -94,6 +94,7 @@ app.configure(function(){
 	io.set('log level', 1);
 	io.sockets.on('connection', function(socket){
 		socket.on('key', function(data){
+			try {
  			      if (data.code === 'w') {
 			        camDY += camINCR;
 			        if (camDY <= 170) {
@@ -135,6 +136,10 @@ app.configure(function(){
 			        board.analogWrite(WM2, WH2PWR);
 			        WH2TM = setTimeout(function() { board.analogWrite(WM2, 0); }, buffTime);
 			      }
+			   } catch (e) {
+			   	 console.log(e);
+			   }
+			console.log(data);
 		});
 	})
 });
