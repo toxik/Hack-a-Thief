@@ -9,14 +9,14 @@ var firmata = require('firmata'),
     camDX	= 90,	camDY	= 90,	camINCR	= 2,
 
     // wheels vars
-    WH1		= 0,	WHD1	= 0,	WH1PWR	= 0,  WH1TM = null, buffTime = 150,
-    WH2		= 0,	WHD2	= 0,	WH2PWR	= 0,  WH2TM = null,
+    WH1		= 3,	WHD1	= 12,	WH1PWR	= 0,  WH1TM = null, buffTime = 150,
+    WH2		= 11,	WHD2	= 13,	WH2PWR	= 0,  WH2TM = null,
 
     // hook vars
     HK 		= 10,	HKMIN	= 90,	HKMAX	= 180, HKCURR = 90, HKINCR = 5, HKDIR = 1,
 
     // sonar vars
-    SON1	= 1,	SON2	= 5,	SONINT	= 250,
+    SON1	= 1,	SON2	= 4,	SONINT	= 250,
     SONSPL1	= [],	SONSPL2	= [],	
     SON1LST	= null,	SON2LST	= null;
 
@@ -118,23 +118,23 @@ app.configure(function(){
 			      } else if (data.code === 'i') {
 			        clearTimeout(WH1TM);
 			        board.digitalWrite(WHD1, board.HIGH);
-			        board.analogWrite(WM1, WH1PWR);
-			        WH1TM = setTimeout(function() { board.analogWrite(WM1, 0); }, buffTime);
+			        board.analogWrite(WH1, WH1PWR);
+			        WH1TM = setTimeout(function() { board.analogWrite(WH1, 0); }, buffTime);
 			      } else if (data.code === 'k') {
 			        clearTimeout(WH1TM);
 			        board.digitalWrite(WHD1, board.LOW);
-			        board.analogWrite(WM1, WH1PWR);
-			        WH1TM = setTimeout(function() { board.analogWrite(WM1, 0); }, buffTime);
+			        board.analogWrite(WH1, WH1PWR);
+			        WH1TM = setTimeout(function() { board.analogWrite(WH1, 0); }, buffTime);
 			      } else if (data.code === 'j') {
 			        clearTimeout(WH2TM);
 			        board.digitalWrite(WHD2, board.HIGH);
-			        board.analogWrite(WM2, WH2PWR);
-			        WH2TM = setTimeout(function() { board.analogWrite(WM2, 0); }, buffTime);
+			        board.analogWrite(WH2, WH2PWR);
+			        WH2TM = setTimeout(function() { board.analogWrite(WH2, 0); }, buffTime);
 			      } else if (data.code === 'l') {
 			        clearTimeout(WH2TM);
 			        board.digitalWrite(WHD2, board.LOW);
-			        board.analogWrite(WM2, WH2PWR);
-			        WH2TM = setTimeout(function() { board.analogWrite(WM2, 0); }, buffTime);
+			        board.analogWrite(WH2, WH2PWR);
+			        WH2TM = setTimeout(function() { board.analogWrite(WH2, 0); }, buffTime);
 			      }
 			   } catch (e) {
 			   	 console.log(e);
@@ -156,7 +156,7 @@ setInterval(function() {
 	try {
 		board.servoWrite(HK, HKCURR);
 	} catch (e) {
-
+		
 	}
 
 }, 200); 
