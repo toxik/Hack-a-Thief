@@ -16,8 +16,8 @@ var firmata = require('firmata'),
     HK 		= 0,	HKMIN	= 90,	HKMAX	= 180, HKCURR = 90, HKINCR = 5, HKDIR = 1,
 
     // sonar vars
-    SON1	= 0,	SON2	= 0,	SON_INT	= 250,
-    sampl1	= [],	sampl2	= [],	
+    SON1	= 0,	SON2	= 0,	SONINT	= 250,
+    SONSPL1	= [],	SONSPL2	= [],	
     SON1LST	= null,	SON2LST	= null;
 
 function configBoard(err) {
@@ -25,7 +25,53 @@ function configBoard(err) {
 		console.log(err);
 		return;
 	}
+
+	try {
+		board.pinMode(camOX,	board.MODES.SERVO);
+		board.pinMode(camOY,	board.MODES.SERVO);
+		board.servoWrite(camOX, camDX);
+		board.servoWrite(camOY, camDY);
+
+		board.pinMode(HK,		board.MODES.SERVO);
+		board.servoWrite(HK,	HKCURR);
+
+		board.pinMode(WHD1, 	board.MODES.OUTPUT);
+		board.pinMode(WHD1, 	board.MODES.OUTPUT);
+		board.pinMode(WH1, 		board.MODES.PWM);
+		board.pinMode(WH2, 		board.MODES.PWM);
+
+		board.pinMode(SON1, 	board.MODES.ANALOG);
+		board.analogRead(SON1,  function (data) { SONSPL1.push( parseInt(data) ); });
+		board.pinMode(SON2,		board.MODES.ANALOG);
+		board.analogRead(SON1,  function (data) { SONSPL2.push( parseInt(data) ); });
+
+		console.log('Arduino board configured and ready for action.');
+	} catch (e) {
+		console.log('Eroare la configurarea arduino AKA ai bagat bine pinii, mah ?!', e);
+	}
 }
+
+// throttle sonars
+setInterval(function() {
+  if ( SONSPL1.length === 0 && SONSPL2.length === 0 ) {
+    // nothing to do here
+    return;
+}
+var medie1 = 0, medie2 = 0, i = 0;
+  for (i = 0; i < SONSPL1.length; i++) { medie1 += SONSPL1[i] }
+  for (i = 0; i < SONSPL2.length; i++) { medie2 += SONSPL2[i] }
+  medie1 = parseInt( medie1 / SONSPL1.length );
+  medie2 = parseInt( medie2 / SONSPL2.length );
+  if (last1 !== medie1 || last2 !== medie2) {
+    last1 = medie1;
+    last2 = medie2;
+    onSonarChange({ left: medie1, right: medie2 });
+  }
+
+  SONSPL1.length = 0;
+  SONSPL2.length = 0;
+
+}, SONINT);
 
 app.configure(function(){
 	// we don't want any parsing
@@ -48,6 +94,7 @@ app.configure(function(){
 	})
 });
 
+// do the hacking and slashing
 setInterval(function(){
 	HKCURR += HKDIR * HKINCR;
 	if (HKCURR < HKMIN || HKCURR > HKMAX) {
