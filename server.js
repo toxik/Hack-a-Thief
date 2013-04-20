@@ -9,8 +9,8 @@ var firmata = require('firmata'),
     camDX	= 90,	camDY	= 90,	camINCR	= 2,
 
     // wheels vars
-    WH1		= 3,	WHD1	= 12,	WH1PWR	= 0,  WH1TM = null, buffTime = 150,
-    WH2		= 11,	WHD2	= 13,	WH2PWR	= 0,  WH2TM = null,
+    WH1		= 3,	WHD1	= 12,	WH1PWR	= 60,  WH1TM = null, buffTime = 150,
+    WH2		= 11,	WHD2	= 13,	WH2PWR	= 60,  WH2TM = null,
 
     // hook vars
     HK 		= 10,	HKMIN	= 90,	HKMAX	= 180, HKCURR = 90, HKINCR = 5, HKDIR = 1,
@@ -94,6 +94,7 @@ app.configure(function(){
 	io.set('log level', 1);
 	io.sockets.on('connection', function(socket){
 		socket.on('key', function(data){
+			WH1PWR = WH2PWR = 60;
 			try {
  			      if (data.code === 'w') {
 			        camDY += camINCR;
@@ -116,23 +117,47 @@ app.configure(function(){
 			          board.servoWrite(camOX, camDX);
 			        }
 			      } else if (data.code === 'i') {
+			      	// mers inainte
 			        clearTimeout(WH1TM);
 			        board.digitalWrite(WHD1, board.HIGH);
 			        board.analogWrite(WH1, WH1PWR);
 			        WH1TM = setTimeout(function() { board.analogWrite(WH1, 0); }, buffTime);
-			      } else if (data.code === 'k') {
-			        clearTimeout(WH1TM);
-			        board.digitalWrite(WHD1, board.LOW);
+			        clearTimeout(WH2TM);
+			        WH2PWR = WH1PWR;
+			        board.digitalWrite(WHD2, board.HIGH);
+			        board.analogWrite(WH2, WH2PWR);
+			        WH2TM = setTimeout(function() { board.analogWrite(WH2, 0); }, buffTime);
+
+			      } else if (data.code === 'j') {
+			        WH1PWR = parseInt(WH2PWR / 2);
+			      	clearTimeout(WH1TM);
+			        board.digitalWrite(WHD1, board.HIGH);
 			        board.analogWrite(WH1, WH1PWR);
 			        WH1TM = setTimeout(function() { board.analogWrite(WH1, 0); }, buffTime);
-			      } else if (data.code === 'j') {
 			        clearTimeout(WH2TM);
 			        board.digitalWrite(WHD2, board.HIGH);
 			        board.analogWrite(WH2, WH2PWR);
 			        WH2TM = setTimeout(function() { board.analogWrite(WH2, 0); }, buffTime);
-			      } else if (data.code === 'l') {
+			      } else if (data.code === 'k') {
+			      	// mers inapoi
+			        clearTimeout(WH1TM);
+			        board.digitalWrite(WHD1, board.LOW);
+			        board.analogWrite(WH1, WH1PWR);
+			        WH1TM = setTimeout(function() { board.analogWrite(WH1, 0); }, buffTime);
 			        clearTimeout(WH2TM);
+			        WH2PWR = WH1PWR;
 			        board.digitalWrite(WHD2, board.LOW);
+			        board.analogWrite(WH2, WH2PWR);
+			        WH2TM = setTimeout(function() { board.analogWrite(WH2, 0); }, buffTime);
+			        
+			      } else if (data.code === 'l') {
+			      	WH2PWR = parseInt(WH1PWR / 2);
+			      	clearTimeout(WH1TM);
+			        board.digitalWrite(WHD1, board.HIGH);
+			        board.analogWrite(WH1, WH1PWR);
+			        WH1TM = setTimeout(function() { board.analogWrite(WH1, 0); }, buffTime);
+			        clearTimeout(WH2TM);
+			        board.digitalWrite(WHD2, board.HIGH);
 			        board.analogWrite(WH2, WH2PWR);
 			        WH2TM = setTimeout(function() { board.analogWrite(WH2, 0); }, buffTime);
 			      }
