@@ -2,6 +2,7 @@ var firmata = require('firmata'),
     express = require('express'),
     board	= new firmata.Board('/dev/ttyUSB0', configBoard),
     app		= express.createServer(),
+    io		= require('socket.io').listen(app);
 
     // camera vars
     camOX 	= 0,	camOY	= 0,
@@ -36,9 +37,15 @@ app.configure(function(){
 		}
 	});
 	app.get("/", function(req, res) {
-		res.render("views/index.html");
+		res.render("index.html");
 	});
-	app.listen(8080);
+	app.listen(80);
+	io.set('log level', 1);
+	io.sockets.on('connection', function(socket){
+		socket.on('key', function(data){
+			console.log(data);
+		});
+	})
 });
 
 setInterval(function(){
@@ -54,7 +61,5 @@ setInterval(function(){
 	} catch (e) {
 
 	}
-
-	console.log(HKCURR);
 
 }, 200); 

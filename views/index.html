@@ -2,9 +2,31 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 	<title>Hack-a-Thief</title>
+	<link href="/static/bootstrap.css" rel="stylesheet">
+
+	<script src="/socket.io/socket.io.v0.9.14.js"></script>
+	<script src="/static/keymaster.min.js"></script>
+	<script src="/static/fastclick.js"></script>
+	<script src="/static/zepto.min.js"></script>
+	
 </head>
 <body>
 	<h1>Hack a Thief, baby!</h1>
+
+<script>
+// connect to socket.io
+var socket = io.connect('http://' + window.location.hostname),
+	rate = 150, down = null;
+
+// when a key is pressed, emit it
+setInterval(function() {
+	if (down !== null) {
+		socket.emit('key', { code: down });
+	}
+}, rate);
+
+</script>
 </body>
 </html>
