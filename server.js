@@ -5,7 +5,7 @@ var firmata = require('firmata'),
     io		= require('socket.io').listen(app);
 
     // camera vars
-    camOX 	= 9,	camOY	= 2,
+    camOX 	= 5,	camOY	= 6,
     camDX	= 90,	camDY	= 90,	camINCR	= 2,
 
     // wheels vars
@@ -13,10 +13,10 @@ var firmata = require('firmata'),
     WH2		= 11,	WHD2	= 13,	WH2PWR	= 60,  WH2TM = null,
 
     // hook vars
-    HK 		= 10,	HKMIN	= 90,	HKMAX	= 180, HKCURR = 90, HKINCR = 5, HKDIR = 1,
+    HK 		= 9,	HKMIN	= 90,	HKMAX	= 180, HKCURR = 90, HKINCR = 5, HKDIR = 1,
 
     // sonar vars
-    SON1	= 1,	SON2	= 4,	SONINT	= 250,
+    SON1	= 4,	SON2	= 5,	SONINT	= 250,
     SONSPL1	= [],	SONSPL2	= [],	
     SON1LST	= null,	SON2LST	= null;
 

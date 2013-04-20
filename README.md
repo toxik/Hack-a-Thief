@@ -1,4 +1,4 @@
-Pi-HOT
+Pi-HOȚ
 ======
 
 *Categorie: HARDWARE*
