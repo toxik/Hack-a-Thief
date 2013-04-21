@@ -2,10 +2,12 @@ var firmata = require('firmata'),
     express = require('express'),
     board	= new firmata.Board('/dev/ttyUSB0', configBoard),
     app		= express.createServer(),
-    io		= require('socket.io').listen(app);
+    io		= require('socket.io').listen(app),
+    fs 		= require('fs'),
+	dir 	= '/root/camera/';
 
     // camera vars
-    camOX 	= 5,	camOY	= 6,
+    camOX 	= 6,	camOY	= 5,
     camDX	= 90,	camDY	= 90,	camINCR	= 2,
 
     // wheels vars
@@ -16,9 +18,15 @@ var firmata = require('firmata'),
     HK 		= 9,	HKMIN	= 90,	HKMAX	= 180, HKCURR = 90, HKINCR = 5, HKDIR = 1,
 
     // sonar vars
-    SON1	= 4,	SON2	= 5,	SONINT	= 250,
+    SON1	= 5,	SON2	= 4,	SONINT	= 250,
     SONSPL1	= [],	SONSPL2	= [],	
-    SON1LST	= null,	SON2LST	= null;
+    SON1LST	= null,	SON2LST	= null,
+
+	telapi 	= require('telapi').client,
+    sms	   	= new telapi(
+		        'REMOVED', 
+			    'REMOVED'
+		    );
 
 function configBoard(err) {
 	if (err) {
@@ -27,14 +35,14 @@ function configBoard(err) {
 	}
 
 	try {
-		board.pinMode(camOX,	board.MODES.SERVO);
+		//board.pinMode(camOX,	board.MODES.SERVO);
 		board.pinMode(camOY,	board.MODES.SERVO);
-		board.servoWrite(camOX, camDX);
+		//board.servoWrite(camOX, camDX);
 		board.servoWrite(camOY, camDY);
 		
 		
-		board.pinMode(HK,		board.MODES.SERVO);
-		board.servoWrite(HK,	HKCURR);
+		//board.pinMode(HK,		board.MODES.SERVO);
+		//board.servoWrite(HK,	HKCURR);
 
 		board.pinMode(WHD1, 	board.MODES.OUTPUT);
 		board.pinMode(WHD1, 	board.MODES.OUTPUT);
@@ -51,6 +59,7 @@ function configBoard(err) {
 		console.log('Eroare la configurarea arduino AKA ai bagat bine pinii, mah ?!', e);
 	}
 }
+
 
 // throttle sonars
 setInterval(function() {
@@ -78,6 +87,10 @@ function onSonarChange(son) {
 	console.log(son);
 }
 
+function limit() {
+	
+}
+
 app.configure(function(){
 	// we don't want any parsing
 	app.set("view options", { layout: false });
@@ -94,7 +107,7 @@ app.configure(function(){
 	io.set('log level', 1);
 	io.sockets.on('connection', function(socket){
 		socket.on('key', function(data){
-			WH1PWR = WH2PWR = 60;
+			
 			try {
  			      if (data.code === 'w') {
 			        camDY += camINCR;
@@ -106,40 +119,43 @@ app.configure(function(){
 			        if (camDY >= 10) {
 			          board.servoWrite(camOY, camDY);
 			        }
-			      } else if (data.code === 'a') {
-			        camDX -= camINCR;
-			        if (camDX >= 30) {
-			          board.servoWrite(camOX, camDX);
-			        }
-			      } else if (camINCR.code ==='d') {
-			        camDX += camINCR;
-			        if (camDX <= 120) {
-			          board.servoWrite(camOX, camDX);
-			        }
+			      } else if (data.code === 'd') {
+			       
+			          //board.servoWrite(camOX, camDX);
+			          WH2PWR += 10;
+			          WH1PWR = WH2PWR;
+			          console.log(WH1PWR);
+			          if (WH1PWR > 240) {
+				WH1PWR = 240;
+			}
+			if (WH2PWR > 240) {
+				WH2PWR = 240;
+			}
+			if (WH1PWR < 0) {
+				WH1PWR = 0;
+			}
+			if (WH2PWR < 0) {
+				WH2PWR = 0;
+			}
+			      } else if (data.code ==='a') {
+			          WH2PWR -= 10;
+			          WH1PWR = WH2PWR;
+			          if (WH1PWR > 240) {
+							WH1PWR = 240;
+						}
+						if (WH2PWR > 240) {
+							WH2PWR = 240;
+						}
+						if (WH1PWR < 0) {
+							WH1PWR = 0;
+						}
+						if (WH2PWR < 0) {
+							WH2PWR = 0;
+						}
+			          console.log(WH1PWR);
 			      } else if (data.code === 'i') {
+			      	limit();
 			      	// mers inainte
-			        clearTimeout(WH1TM);
-			        board.digitalWrite(WHD1, board.HIGH);
-			        board.analogWrite(WH1, WH1PWR);
-			        WH1TM = setTimeout(function() { board.analogWrite(WH1, 0); }, buffTime);
-			        clearTimeout(WH2TM);
-			        WH2PWR = WH1PWR;
-			        board.digitalWrite(WHD2, board.HIGH);
-			        board.analogWrite(WH2, WH2PWR);
-			        WH2TM = setTimeout(function() { board.analogWrite(WH2, 0); }, buffTime);
-
-			      } else if (data.code === 'j') {
-			        WH1PWR = parseInt(WH2PWR / 2);
-			      	clearTimeout(WH1TM);
-			        board.digitalWrite(WHD1, board.HIGH);
-			        board.analogWrite(WH1, WH1PWR);
-			        WH1TM = setTimeout(function() { board.analogWrite(WH1, 0); }, buffTime);
-			        clearTimeout(WH2TM);
-			        board.digitalWrite(WHD2, board.HIGH);
-			        board.analogWrite(WH2, WH2PWR);
-			        WH2TM = setTimeout(function() { board.analogWrite(WH2, 0); }, buffTime);
-			      } else if (data.code === 'k') {
-			      	// mers inapoi
 			        clearTimeout(WH1TM);
 			        board.digitalWrite(WHD1, board.LOW);
 			        board.analogWrite(WH1, WH1PWR);
@@ -149,18 +165,44 @@ app.configure(function(){
 			        board.digitalWrite(WHD2, board.LOW);
 			        board.analogWrite(WH2, WH2PWR);
 			        WH2TM = setTimeout(function() { board.analogWrite(WH2, 0); }, buffTime);
-			        
-			      } else if (data.code === 'l') {
-			      	WH2PWR = parseInt(WH1PWR / 2);
+
+			      } else if (data.code === 'j') {
+			      	limit();
+			        WH1PWR = parseInt(WH2PWR / 2);
 			      	clearTimeout(WH1TM);
+			        board.digitalWrite(WHD1, board.LOW);
+			        board.analogWrite(WH1, WH1PWR);
+			        WH1TM = setTimeout(function() { board.analogWrite(WH1, 0); }, buffTime);
+			        clearTimeout(WH2TM);
+			        board.digitalWrite(WHD2, board.LOW);
+			        board.analogWrite(WH2, WH2PWR);
+			        WH2TM = setTimeout(function() { board.analogWrite(WH2, 0); }, buffTime);
+			      } else if (data.code === 'k') {
+			      	limit();
+			      	// mers inapoi
+			        clearTimeout(WH1TM);
 			        board.digitalWrite(WHD1, board.HIGH);
 			        board.analogWrite(WH1, WH1PWR);
 			        WH1TM = setTimeout(function() { board.analogWrite(WH1, 0); }, buffTime);
 			        clearTimeout(WH2TM);
+			        WH2PWR = WH1PWR;
 			        board.digitalWrite(WHD2, board.HIGH);
 			        board.analogWrite(WH2, WH2PWR);
 			        WH2TM = setTimeout(function() { board.analogWrite(WH2, 0); }, buffTime);
+			        
+			      } else if (data.code === 'l') {
+			      	limit();
+			      	WH2PWR = parseInt(WH1PWR / 2);
+			      	clearTimeout(WH1TM);
+			        board.digitalWrite(WHD1, board.LOW);
+			        board.analogWrite(WH1, WH1PWR);
+			        WH1TM = setTimeout(function() { board.analogWrite(WH1, 0); }, buffTime);
+			        clearTimeout(WH2TM);
+			        board.digitalWrite(WHD2, board.LOW);
+			        board.analogWrite(WH2, WH2PWR);
+			        WH2TM = setTimeout(function() { board.analogWrite(WH2, 0); }, buffTime);
 			      }
+
 			   } catch (e) {
 			   	 console.log(e);
 			   }
@@ -179,7 +221,7 @@ setInterval(function() {
 	if (HKCURR > HKMAX) HKCURR = HKMAX;
 
 	try {
-		board.servoWrite(HK, HKCURR);
+		//board.servoWrite(HK, HKCURR);
 	} catch (e) {
 
 	}

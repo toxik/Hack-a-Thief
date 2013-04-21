@@ -8,7 +8,7 @@
 		.button {width: 2.4em; height: 1.4em; font-weight: bold; font-size: 2.5em }
 		.switch {width: 2.4em; height: 1.4em; font-weight: bold; font-size: 2.5em }
 	</style>
-	<title>Document</title>
+	<title>Dream team</title>
 </head>
 <body>
 	<script src="/socket.io/socket.io.v0.9.14.js"></script>
@@ -16,34 +16,34 @@
 	<script src="/static/fastclick.js"></script>
 	<script src="/static/zepto.min.js"></script>
 
-	<img id="stream" src="http://replaceme:8081/?action=stream">
+	<img id="stream1" src="http://192.168.2.6:8081/?action=stream">
 	<br>
 	
 	<table style="width: 100%">
 		<tr>
-			<td><button class="btn span3 button" data-key=aw>&larr;&uarr;</button></td>
-			<td><button class="btn span3 button btn-primary" data-key=w>&uarr;</button></td>
-			<td><button class="btn span3 button" data-key=wd>&uarr;&rarr;</button></td>
+			<td><button class="btn span3 button hidden" data-key=aw>&larr;&uarr;</button></td>
+			<td><button class="btn span3 button btn-primary" data-key=i>&uarr;</button></td>
+			<td><button class="btn span3 button hidden" data-key=wd>&uarr;&rarr;</button></td>
 		</tr>
 		<tr>
 			<td>
 				<button class="btn span3 button btn-primary" data-key=a>&larr;</button>
 			</td>
 			<td>
-				<button id="movToggle" class="btn switch span3 btn-success">c</button>
+				<button id="movToggle" class="btn switch span3 btn-success hidden">c</button>
 			</td>
 			<td>
 				<button class="btn span3 button btn-primary" data-key=d>&rarr;</button>
 			</td>
 		</tr>
 		<tr>
-			<td><button class="btn span3 button" data-key=as>&larr;&darr;</button></td>
-			<td><button class="btn span3 button btn-primary" data-key=s>&darr;</button></td>
-			<td><button class="btn span3 button" data-key=sd>&darr;&rarr;</button></td>
+			<td><button class="btn span3 button hidden" data-key=as >&larr;&darr;</button></td>
+			<td><button class="btn span3 button btn-primary" data-key=k>&darr;</button></td>
+			<td><button class="btn span3 button hidden" data-key=sd >&darr;&rarr;</button></td>
 		</tr>
 	</table>
 	
-<textarea id="serverConsole" class="span12" rows=18>Raspuns de la server:
+<textarea id="serverConsole" class="span12" rows=18>Putere motor:
 </textarea>
 
 	<script>
@@ -65,20 +65,20 @@
 	  }, false);
 	  var socket = io.connect('http://' + window.location.hostname);
 
-	  var $stream = $('#stream'), streamSrc = $stream.attr('src');
-	  $stream.attr('src', streamSrc.replace('replaceme', window.location.hostname));
+//	  var $stream = $('#stream'), streamSrc = $stream.attr('src');
+	  //$stream.attr('src', streamSrc.replace('replaceme', window.location.hostname));
 	  // streaming off
-	  $stream.remove();
+	  //$stream.remove();
 
 	  // EASIER DEBUG
 	  $serverConsole = $('#serverConsole');
-	  socket.on('key', function(data) {
-		$serverConsole.text( $serverConsole.text() + data);
+	  socket.on('motor', function(data) {
+	  	$serverConsole.text($serverConsole.text() + motor);
 	  });
 	  // END EASIER DEBUG
 
 
-	  key('w, a, s, d, i, j, k, l', function(e, h) { 
+	  key('w, j, s, l, i, a, k, d', function(e, h) { 
 		socket.emit('key', { code: h.shortcut });
 	  });
 
@@ -86,8 +86,8 @@
 	  var 
 	  	movToggle = 0,
 	  	all = [
-	  		[ 'aw', 'w', 'wd', 'a', 'd', 'as', 's', 'sd' ],
-	  		[ 'ji', 'i', 'il', 'j', 'l', 'jk', 'k', 'kl' ]
+	  		[ 'aw', 'w', 'wd', 'j', 'l', 'as', 's', 'sd' ],
+	  		[ 'ji', 'i', 'il', 'a', 'd', 'jk', 'k', 'kl' ]
 	  	], $movToggle = $('#movToggle');
 	  $movToggle.click(function(e) {
 	  	movToggle = Math.abs(movToggle - 1);
